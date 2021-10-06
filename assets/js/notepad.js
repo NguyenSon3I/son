@@ -6445,7 +6445,7 @@ function addPort(object, canvas, objectID) {
     else if (object._objects[0].type === "polyline") {
         ports = ['ml', 'mr']
     }
-    // test up code lên git 6/10
+    // test up code lên git 6/10.
     else if (object._objects[0].type === "image") { 
         ports = ['mt']
     }
