@@ -6445,7 +6445,7 @@ function addPort(object, canvas, objectID) {
     else if (object._objects[0].type === "polyline") {
         ports = ['ml', 'mr']
     }
-    else if (object._objects[0].type === "image") {
+    else if (object._objects[0].type === "image") { // sơn sửa ngày 6/10
         ports = ['mt']
     }
 
