@@ -6000,8 +6000,8 @@ function loadCanvasJson(arr, canvas) {
                         port2: arr[index].port2,
                     })
                     canvas.add(enlivenedObjects[0]);
-                    if (enlivenedObjects[0]._objects && 
-                        enlivenedObjects[0]._objects.length > 2 && 
+                    if (enlivenedObjects[0]._objects &&
+                        enlivenedObjects[0]._objects.length > 2 &&
                         enlivenedObjects[0]._objects[0].type != 'image') {
                         addPort(enlivenedObjects[0], canvas, arr[index].objectID);
                     }
@@ -6370,7 +6370,7 @@ function makeLine(canvas, point, idObject1, idObject2, corner1, corner2, objectI
     console.log(line);
     var text;
     if (point.x1 < point.x2) {
-        text = new fabric.Text(text, { fontSize: 10, top: point.y1, left: point.x1, objectCaching: false, name: "lineusername", lineID: idObject1, objectID: objectID, corner: corner1 });
+        text = new fabric.Text(text, { fontSize: 10, top: point.y1, left: point.x1, objectCaching: false, name: "lineusername1", lineID: idObject1, objectID: objectID, corner: corner1 });
     } else {
         text = new fabric.Text(text, { fontSize: 10, top: point.y2, left: point.x2, objectCaching: false, name: "lineusername", lineID: idObject2, objectID: objectID, corner: corner2 });
     }
@@ -6428,7 +6428,7 @@ function movelinename(canvas, objectID, top, left, corner) {
 function addPort(object, canvas, objectID) {
     let ports;
     if (
-        object._objects[0].type === "image" ||
+        // object._objects[0].type === "image" ||
         object._objects[0].type === "rect" ||
         object._objects[0].type === 'circle' ||
         object._objects[0].type === 'ellipse' ||
@@ -6445,10 +6445,14 @@ function addPort(object, canvas, objectID) {
     else if (object._objects[0].type === "polyline") {
         ports = ['ml', 'mr']
     }
+    else if (object._objects[0].type === "image") {
+        ports = ['mt']
+    }
+
     ports.forEach(port => {
         let point = findTargetPort(object, port);
         var c = new fabric.Circle({
-            left: point.x1,
+            left: point.x1 - 180,
             top: point.y1,
             radius: 10,
             fill: '#B2CCFF',
@@ -6458,7 +6462,6 @@ function addPort(object, canvas, objectID) {
             originX: 'center',
             originY: 'center',
             evented: false,
-            // width: 50,
         });
         canvas.add(c);
     })
