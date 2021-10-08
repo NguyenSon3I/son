@@ -3757,6 +3757,7 @@ var backgroundColorCanvas = ""
                 let layer_num = $('#layers-body .active').attr('data-cnt');
                 isLoadDataLocal = false;
                 emitEvent(layer_num);
+
             });
         }
 
@@ -4909,7 +4910,10 @@ var backgroundColorCanvas = ""
 
         var isHoverObj = true;
         canvas.on('mouse:over', function (obj) {
-            if (obj.target !== null && obj.target._objects && obj.target._objects.length > 2 && obj.target._objects[0].type !== "image") {
+            if (obj.target !== null &&
+                obj.target._objects &&
+                obj.target._objects.length > 2 &&
+                obj.target._objects[0].type !== "image") {
                 isHoverObj = true;
 
                 obj.target.set("hasRotatingPoint", false)
@@ -6257,7 +6261,7 @@ function findTargetPort(object, ports) {
 
         case 'mt':
             points = [
-                object.left + (object.width / 2), object.top,
+                object.left/*  + (object.width -)  */ - 20, object.top,
                 object.left + (object.width / 2), object.top
             ];
             break;
@@ -6370,9 +6374,27 @@ function makeLine(canvas, point, idObject1, idObject2, corner1, corner2, objectI
     console.log(line);
     var text;
     if (point.x1 < point.x2) {
-        text = new fabric.Text(text, { fontSize: 10, top: point.y1, left: point.x1, objectCaching: false, name: "lineusername1", lineID: idObject1, objectID: objectID, corner: corner1 });
+        text = new fabric.Text(text, {
+            fontSize: 10,
+            top: point.y1,
+            left: point.x1,
+            objectCaching: false,
+            name: "lineusername1",
+            lineID: idObject1,
+            objectID: objectID,
+            corner: corner1
+        });
     } else {
-        text = new fabric.Text(text, { fontSize: 10, top: point.y2, left: point.x2, objectCaching: false, name: "lineusername", lineID: idObject2, objectID: objectID, corner: corner2 });
+        text = new fabric.Text(text, {
+            fontSize: 10,
+            top: point.y2,
+            left: point.x2,
+            objectCaching: false,
+            name: "lineusername",
+            lineID: idObject2,
+            objectID: objectID,
+            corner: corner2
+        });
     }
     canvas.add(text);
     line.selectable = false;
@@ -6433,39 +6455,43 @@ function addPort(object, canvas, objectID) {
         object._objects[0].type === 'circle' ||
         object._objects[0].type === 'ellipse' ||
         object._objects[0].type === 'polygon' ||
-        object._objects[0].type === "path"
+        object._objects[0].type === "path" ||
+        object._objects[0].type === "triangle" ||
+        object._objects[0].type === "polyline" ||
+        object._objects[0].type === "image"
     ) {
-        ports = ['mb', 'mt', 'ml', 'mr']
+        ports = [/* 'mb', */ 'mt'/* , 'ml', 'mr' */]
 
     }
-    else if (object._objects[0].type === "triangle") {
-        ports = ['mb', 'mt']
-    }
+    // else if (object._objects[0].type === "triangle") {
+    //     ports = ['mb', 'mt']
+    // }
 
-    else if (object._objects[0].type === "polyline") {
-        ports = ['ml', 'mr']
-    }
-    // test up code lên git 6/10.
-    else if (object._objects[0].type === "image") { 
-        ports = ['mt']
-    }
-
+    // else if (object._objects[0].type === "polyline") {
+    //     ports = ['ml', 'mr']
+    // }
+    // // test up code lên git 6/10.
+    // else if (object._objects[0].type === "image") {
+    //     ports = ['mt']
+    // }
     ports.forEach(port => {
         let point = findTargetPort(object, port);
         var c = new fabric.Circle({
-            left: point.x1 - 180,
+            left: point.x1 - 1,
             top: point.y1,
             radius: 10,
             fill: '#B2CCFF',
             name: "port",
             port: port,
             portID: objectID,
-            originX: 'center',
+            originX: 'left',
             originY: 'center',
             evented: false,
         });
-        canvas.add(c);
+        // canvas.add(c);
+        canvas.add(c)
     })
+        ;
 }
 
 
