@@ -3728,7 +3728,8 @@ var backgroundColorCanvas = ""
         function createIcon(url) {
             let icon = new fabric.Image(url, {
                 top: -70,
-                left: -80
+                left: -80,
+                radius: 7
             })
             canvas.add(createTextBox(icon));
             let layer_num = $('#layers-body .active').attr('data-cnt');
@@ -3776,9 +3777,7 @@ var backgroundColorCanvas = ""
             let group = new fabric.Group([obj, textbox], {
                 top: 100,
                 left: 100,
-
             });
-
             return group;
         }
 
@@ -4679,7 +4678,6 @@ var backgroundColorCanvas = ""
                         underline: false
                     })
                 }
-
             } else {
                 if (!objectMiro.item(1).underline) {
                     objectMiro.item(0).set({
@@ -4729,24 +4727,24 @@ var backgroundColorCanvas = ""
                             connectorLine = points;
                             selectedObject = e.target;
                             corner = e.target.__corner;
-                            choosePort(corner, canvas, e.target.objectID);
+                            choosePort(corner, canvas, e.target.objectID); 
                         } else {
                             if (selectedObject.objectID == e.target.objectID) {
                                 if (corner == e.target.__corner) {
                                     let object = canvas.getObjects().filter(obj =>
                                         obj.port == corner &&
                                         obj.portID == selectedObject.objectID
-                                    )
+                                    );
                                     if (object) {
                                         object[0].set({
                                             fill: "#B2CCFF",
                                             radius: 7
-                                        })
-                                    }
+                                        });
+                                    };
                                     selectedObject = null;
                                     connectorLine = null;
                                     corner = null;
-                                }
+                                };
                                 return;
                             }
                             let portCenter = getPortCenterPoint(e.target, e.target.__corner);
@@ -4764,7 +4762,15 @@ var backgroundColorCanvas = ""
                         ) {
                             let id = randomID();
 
-                            var line = makeLine(canvas, connectorLine, selectedObject.objectID, e.target.objectID, corner, e.target.__corner, id, username);
+                            var line = makeLine(
+                                canvas, 
+                                connectorLine,  
+                                selectedObject.objectID, 
+                                e.target.objectID, 
+                                corner,
+                                e.target.__corner, 
+                                id, username,
+                                );
                             if (selectedObject.corner) {
                                 selectedObject.corner.push(corner);
                             } else {
@@ -4777,6 +4783,7 @@ var backgroundColorCanvas = ""
                                 e.target.corner = [];
                                 e.target.corner.push(e.target.__corner);
                             }
+                            
                             canvas.renderAll();
                             socket.emit('connected', {
                                 'idObject1': selectedObject.objectID,
@@ -4830,8 +4837,7 @@ var backgroundColorCanvas = ""
             } else {
                 $('#edit-form').css({ "visibility": "hidden" });
             }
-
-        })
+        });
 
         var isMoving = false;
 
@@ -6455,25 +6461,25 @@ function addPort(object, canvas, objectID) {
         object._objects[0].type === 'circle' ||
         object._objects[0].type === 'ellipse' ||
         object._objects[0].type === 'polygon' ||
-        object._objects[0].type === "path" ||
-        object._objects[0].type === "triangle" ||
-        object._objects[0].type === "polyline" ||
-        object._objects[0].type === "image"
+        object._objects[0].type === "path" 
+        // object._objects[0].type === "triangle" ||
+        // object._objects[0].type === "polyline" ||
+        // object._objects[0].type === "image"
     ) {
-        ports = [/* 'mb', */ 'mt'/* , 'ml', 'mr' */]
+        ports = ['mb', 'mt', 'ml', 'mr']
 
     }
-    // else if (object._objects[0].type === "triangle") {
-    //     ports = ['mb', 'mt']
-    // }
+    else if (object._objects[0].type === "triangle") {
+        ports = ['mb', 'mt']
+    }
 
-    // else if (object._objects[0].type === "polyline") {
-    //     ports = ['ml', 'mr']
-    // }
-    // // test up code lên git 6/10.
-    // else if (object._objects[0].type === "image") {
-    //     ports = ['mt']
-    // }
+    else if (object._objects[0].type === "polyline") {
+        ports = ['ml', 'mr']
+    }
+    // test up code lên git 6/10.
+    else if (object._objects[0].type === "image") {
+        ports = ['mt']
+    }
     ports.forEach(port => {
         let point = findTargetPort(object, port);
         var c = new fabric.Circle({
@@ -6490,8 +6496,8 @@ function addPort(object, canvas, objectID) {
         });
         // canvas.add(c);
         canvas.add(c)
-    })
-        ;
+    });
+        
 }
 
 
