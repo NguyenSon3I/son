@@ -3729,7 +3729,6 @@ var backgroundColorCanvas = ""
             let icon = new fabric.Image(url, {
                 top: -70,
                 left: -80,
-                radius: 7
             })
             canvas.add(createTextBox(icon));
             let layer_num = $('#layers-body .active').attr('data-cnt');
@@ -4692,7 +4691,7 @@ var backgroundColorCanvas = ""
             }
             updateLocal(pool_data, objectMiro.objectID, objectMiro, socket);
             canvas.requestRenderAll();
-        })
+        });
 
 
         canvas.on('mouse:up', function (e) {
@@ -4708,7 +4707,7 @@ var backgroundColorCanvas = ""
                 // e.target.set("transparentCorners", true)
                 //canvas.renderAll()
 
-                if (e.target._objects && e.target._objects.length > 2) {
+                if (e.target._objects && e.target._objects.length > 0) {
                     e.target.setControlsVisibility({
                         tl: false,
                         tr: false,
@@ -4839,6 +4838,8 @@ var backgroundColorCanvas = ""
             }
         });
 
+
+
         var isMoving = false;
 
         canvas.on('object:moving', function (e) {
@@ -4917,9 +4918,9 @@ var backgroundColorCanvas = ""
         var isHoverObj = true;
         canvas.on('mouse:over', function (obj) {
             if (obj.target !== null &&
-                obj.target._objects &&
-                obj.target._objects.length > 2 &&
-                obj.target._objects[0].type !== "image") {
+                obj.target._objects 
+                /*&& obj.target._objects.length > 2 &&
+                obj.target._objects[0].type !== "image" */) {
                 isHoverObj = true;
 
                 obj.target.set("hasRotatingPoint", false)
@@ -4982,12 +4983,25 @@ var backgroundColorCanvas = ""
                         ml: true,
                         mr: true
                     })
+                }
+                else if (obj.target._objects[0].type === "image") {
+                        obj.target.setControlsVisibility({
+                            tl: false,
+                            tr: false,
+                            bl: false,
+                            br: false,
+                            mt: true,
+                            mb: false,
+                            mtr: false,
+                            ml: false,
+                            mr: false
+                        })
+                    }
                     // if(obj.target.corner){
                     //     obj.target.corner.forEach(port => {
                     //         disablePort(port, obj.target);
                     //     })
                     // }
-                }
                 obj.target["cornerStyle"] = "circle"
                 obj.target["cornerSize"] = 15
                 canvas.setActiveObject(obj.target);
@@ -4996,10 +5010,13 @@ var backgroundColorCanvas = ""
         })
 
 
+
         canvas.on("mouse:out", function (obj) {
 
             //obj.target.item(0).set("fill", "white")
-            if (obj.target !== null && obj.target._objects && obj.target._objects.length > 2 && obj.target._objects[0].type !== "image") {
+            if (obj.target !== null && 
+                obj.target._objects /* && 
+                obj.target._objects.length > 2 && obj.target._objects[0].type !== "image" */) {
                 isHoverObj = false;
                 obj.target["cornerStyle"] = "rect"
                 obj.target["cornerSize"] = 15
@@ -6462,9 +6479,6 @@ function addPort(object, canvas, objectID) {
         object._objects[0].type === 'ellipse' ||
         object._objects[0].type === 'polygon' ||
         object._objects[0].type === "path" 
-        // object._objects[0].type === "triangle" ||
-        // object._objects[0].type === "polyline" ||
-        // object._objects[0].type === "image"
     ) {
         ports = ['mb', 'mt', 'ml', 'mr']
 
