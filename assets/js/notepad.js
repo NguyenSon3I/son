@@ -17,6 +17,7 @@ var backgroundColorCanvas = ""
         var shift = false;
         var divrubber = $('#divrubber');
         var lastObject = {};
+        var previous = {};
 
         // A flag for drawing activity
         var drawing = false;
@@ -4719,14 +4720,15 @@ var backgroundColorCanvas = ""
                         ml: false,
                         mtr: false
                     })
-                    if (findTargetPort(e.target).x1) {
+                    if (findTargetPort(e.target).x1 && previous != null) {
                         if (selectedObject == null) {
                             console.log("ok");
                             let points = findTargetPort(e.target);
                             connectorLine = points;
                             selectedObject = e.target;
                             corner = e.target.__corner;
-                            choosePort(corner, canvas, e.target.objectID); 
+                            choosePort(corner, canvas, e.target.objectID);
+                            previous = e.target;
                         } else {
                             if (selectedObject.objectID == e.target.objectID) {
                                 if (corner == e.target.__corner) {
@@ -5202,6 +5204,7 @@ var backgroundColorCanvas = ""
 
             }
         })
+        // Hàm xử lý điều kiện 
 
 
         $(function () {
@@ -6284,8 +6287,8 @@ function findTargetPort(object, ports) {
 
         case 'mt':
             points = [
-                object.left/*  + (object.width -)  */ - 20, object.top,
-                object.left + (object.width / 2), object.top
+                object.left/*  + (object.width -)  */ - 20  , object.top /* + 160  */,
+                object.left + (object.width / 2) , object.top
             ];
             break;
         case 'mr':
@@ -6490,7 +6493,7 @@ function addPort(object, canvas, objectID) {
     else if (object._objects[0].type === "polyline") {
         ports = ['ml', 'mr']
     }
-    // test up code lên git 6/10.
+    // test up code lên git 25/10.
     else if (object._objects[0].type === "image") {
         ports = ['mt']
     }
