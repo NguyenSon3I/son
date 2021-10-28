@@ -3106,7 +3106,9 @@ var backgroundColorCanvas = ""
         let socket = io(url);
         fabric.Object.prototype.objectCaching = false;
         console.log('canvas load');
-        let canvas = new fabric.Canvas('canvas_draw');
+        let canvas = new fabric.Canvas('canvas_draw', {
+            enableRetinaScaling: true
+        });
         let line, triangle, origX, origY, isFreeDrawing = false;
         let isRectActive = false, isCircleActive = false, isArrowActive = false, activeColor = '#000000';
         let isLoadedFromJson = false;
@@ -3730,7 +3732,47 @@ var backgroundColorCanvas = ""
             let icon = new fabric.Image(url, {
                 top: -70,
                 left: -80,
+                strokeWidth: 1,
+                stroke: 'black',
+                dragBorderWidth: 15,
+                // selectable: false,
+                // evented: true,
+                // hasBorders: true,
+                // lockMovementY: true,
+                // lockMovementX: true
             })
+            function innerCornerPoint(start, end, offset) {
+                // vector length
+                const l = start.distanceFrom(end)
+                // unit vector
+                const uv = new fabric.Point((end.x - start.x) / l, (end.y - start.y) / l)
+                // point on the vector at a given offset but no further than side length
+                const p = start.add(uv.multiply(Math.min(offset, l)))
+                // rotate point
+                return fabric.util.rotatePoint(p, start, fabric.util.degreesToRadians(45))
+            }
+
+            icon._getInnerBorderLines = function (c) {
+                // the actual offset from outer corner is the length of a hypotenuse of a right triangle with border widths as 2 sides
+                const offset = Math.sqrt(2 * (this.dragBorderWidth ** 2))
+                // find 4 inner corners as offsets rotated 45 degrees CW
+                const newCoords = {
+                    tl: innerCornerPoint(c.tl, c.tr, offset),
+                    tr: innerCornerPoint(c.tr, c.br, offset),
+                    br: innerCornerPoint(c.br, c.bl, offset),
+                    bl: innerCornerPoint(c.bl, c.tl, offset),
+                }
+                return this._getImageLines(newCoords)
+            }
+
+            icon.containsPoint = function (point, lines, absolute, calculate) {
+                const coords = calculate ? this.calcCoords(absolute) : absolute ? this.aCoords : this.oCoords
+                lines = lines || this._getImageLines(coords)
+                const innerRectPoints = this._findCrossPoints(point, lines);
+                const innerBorderPoints = this._findCrossPoints(point, this._getInnerBorderLines(coords))
+                // calculate intersections
+                return innerRectPoints === 1 && innerBorderPoints !== 1
+            }
             canvas.add(createTextBox(icon));
             let layer_num = $('#layers-body .active').attr('data-cnt');
             isLoadDataLocal = false;
@@ -3773,6 +3815,8 @@ var backgroundColorCanvas = ""
                 left: 0.8 * box_width,
                 top: 3.1 * box_height,
             });
+
+
 
             let group = new fabric.Group([obj, textbox], {
                 top: 100,
@@ -3826,17 +3870,56 @@ var backgroundColorCanvas = ""
 
         // Vẽ hình chữ nhật
         function iconRect(e) {
-            var rect = new fabric.Rect({
+            const rect = new fabric.Rect({
                 width: 100,
                 height: 100,
-                stroke: 'black',
+                stroke: 'red',
                 fill: 'white',
                 originX: 'center',
                 originY: 'center',
+
             });
 
+
+            //     getTextForObject(createTextBox(rect));
+            // }
+
+            // tính toán đường viền hình chữ nhật 
+            function innerCornerPoint(start, end, offset) {
+                // vector length
+                const l = start.distanceFrom(end)
+                // unit vector
+                const uv = new fabric.Point((end.x - start.x) / l, (end.y - start.y) / l)
+                // point on the vector at a given offset but no further than side length
+                const p = start.add(uv.multiply(Math.min(offset, l)))
+                // rotate point
+                return fabric.util.rotatePoint(p, start, fabric.util.degreesToRadians(45))
+            }
+
+            rect._getInnerBorderLines = function (c) {
+                // the actual offset from outer corner is the length of a hypotenuse of a right triangle with border widths as 2 sides
+                const offset = Math.sqrt(2 * (this.dragBorderWidth ** 2))
+                // find 4 inner corners as offsets rotated 45 degrees CW
+                const newCoords = {
+                    tl: innerCornerPoint(c.tl, c.tr, offset),
+                    tr: innerCornerPoint(c.tr, c.br, offset),
+                    br: innerCornerPoint(c.br, c.bl, offset),
+                    bl: innerCornerPoint(c.bl, c.tl, offset),
+                }
+                return this._getImageLines(newCoords)
+            }
+
+            rect.containsPoint = function (point, lines, absolute, calculate) {
+                const coords = calculate ? this.calcCoords(absolute) : absolute ? this.aCoords : this.oCoords
+                lines = lines || this._getImageLines(coords)
+                const innerRectPoints = this._findCrossPoints(point, lines);
+                const innerBorderPoints = this._findCrossPoints(point, this._getInnerBorderLines(coords))
+                // calculate intersections
+                return innerRectPoints === 1 && innerBorderPoints !== 1
+            }
             getTextForObject(createTextBox(rect));
         }
+
 
         //Vẽ hình học
         function icongeometric(e) {
@@ -3986,6 +4069,7 @@ var backgroundColorCanvas = ""
                     top: -50,
                     left: -50
                 });
+
             getTextForObject(createTextBox(poly));
         }
 
@@ -4764,14 +4848,14 @@ var backgroundColorCanvas = ""
                             let id = randomID();
 
                             var line = makeLine(
-                                canvas, 
-                                connectorLine,  
-                                selectedObject.objectID, 
-                                e.target.objectID, 
+                                canvas,
+                                connectorLine,
+                                selectedObject.objectID,
+                                e.target.objectID,
                                 corner,
-                                e.target.__corner, 
+                                e.target.__corner,
                                 id, username,
-                                );
+                            );
                             if (selectedObject.corner) {
                                 selectedObject.corner.push(corner);
                             } else {
@@ -4784,7 +4868,7 @@ var backgroundColorCanvas = ""
                                 e.target.corner = [];
                                 e.target.corner.push(e.target.__corner);
                             }
-                            
+
                             canvas.renderAll();
                             socket.emit('connected', {
                                 'idObject1': selectedObject.objectID,
@@ -4920,7 +5004,7 @@ var backgroundColorCanvas = ""
         var isHoverObj = true;
         canvas.on('mouse:over', function (obj) {
             if (obj.target !== null &&
-                obj.target._objects 
+                obj.target._objects
                 /*&& obj.target._objects.length > 2 &&
                 obj.target._objects[0].type !== "image" */) {
                 isHoverObj = true;
@@ -4987,23 +5071,23 @@ var backgroundColorCanvas = ""
                     })
                 }
                 else if (obj.target._objects[0].type === "image") {
-                        obj.target.setControlsVisibility({
-                            tl: false,
-                            tr: false,
-                            bl: false,
-                            br: false,
-                            mt: true,
-                            mb: false,
-                            mtr: false,
-                            ml: false,
-                            mr: false
-                        })
-                    }
-                    // if(obj.target.corner){
-                    //     obj.target.corner.forEach(port => {
-                    //         disablePort(port, obj.target);
-                    //     })
-                    // }
+                    obj.target.setControlsVisibility({
+                        tl: false,
+                        tr: false,
+                        bl: false,
+                        br: false,
+                        mt: true,
+                        mb: false,
+                        mtr: false,
+                        ml: false,
+                        mr: false
+                    })
+                }
+                // if(obj.target.corner){
+                //     obj.target.corner.forEach(port => {
+                //         disablePort(port, obj.target);
+                //     })
+                // }
                 obj.target["cornerStyle"] = "circle"
                 obj.target["cornerSize"] = 15
                 canvas.setActiveObject(obj.target);
@@ -5016,7 +5100,7 @@ var backgroundColorCanvas = ""
         canvas.on("mouse:out", function (obj) {
 
             //obj.target.item(0).set("fill", "white")
-            if (obj.target !== null && 
+            if (obj.target !== null &&
                 obj.target._objects /* && 
                 obj.target._objects.length > 2 && obj.target._objects[0].type !== "image" */) {
                 isHoverObj = false;
@@ -6287,8 +6371,8 @@ function findTargetPort(object, ports) {
 
         case 'mt':
             points = [
-                object.left/*  + (object.width -)  */ - 20  , object.top /* + 160  */,
-                object.left + (object.width / 2) , object.top
+                object.left/*  + (object.width - 20)  */ - 20, object.top,
+                object.left + (object.width / 2), object.top
             ];
             break;
         case 'mr':
@@ -6377,7 +6461,7 @@ function makeLine(canvas, point, idObject1, idObject2, corner1, corner2, objectI
         objectID: objectID
     });
 
-    line.path[0][1] = point.x1;
+    line.path[0][1] = point.x1 + 100;
     line.path[0][2] = point.y1;
 
     // line.path[2][1] = point.x1;
@@ -6481,7 +6565,7 @@ function addPort(object, canvas, objectID) {
         object._objects[0].type === 'circle' ||
         object._objects[0].type === 'ellipse' ||
         object._objects[0].type === 'polygon' ||
-        object._objects[0].type === "path" 
+        object._objects[0].type === "path"
     ) {
         ports = ['mb', 'mt', 'ml', 'mr']
 
@@ -6514,7 +6598,8 @@ function addPort(object, canvas, objectID) {
         // canvas.add(c);
         canvas.add(c)
     });
-        
+
 }
+
 
 
